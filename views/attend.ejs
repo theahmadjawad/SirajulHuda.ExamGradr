@@ -1,0 +1,94 @@
+<%- include("partials/header") %>
+
+    <div id="overlay"></div>
+    <style>
+        body {
+            overflow: hidden;
+        }
+    </style>
+
+    <section class="section-exam">
+        <div class="block-main">
+            <div class="main__nav">
+                <div class="container-fluid container-wrap">
+                    <div class="row ">
+                        <div class="col">
+                            <div class="brand"> ExamGradr</div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="time-left">Time Left: <span> 00:23:34</span></div>
+                        </div>
+                        <div class="col-auto btn-menu__wrapper"><button id="btn-menu" class="btn-light">|||</button></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="main__content">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col">
+                            <div class="exam__question__info">
+                                Question 1
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="exam__question_title">
+                                Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quidem voluptatem voluptatibus non, officia culpa, architecto id nostrum praesentium eius nisi odit rerum reprehenderit, iste atque reiciendis eaque amet dolorem distinctio?
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <% for($i=1;$i<=4;$i++){ %>
+                            <div class="col-lg-6">
+                                <div class="exam__answer__option">
+                                    <input type="radio" id="test<%= $i %>" name="radio-group">
+                                    <label for="test<%= $i %>"> Quidem voluptatem.</label>
+                                </div>
+                            </div>
+                            <% } %>
+                    </div>
+                </div>
+            </div>
+            <div class="main__footer">
+                <div class="container-fluid container-wrap">
+                    <div class="row ">
+                        <div class="col"><button class="btn-light">Previous</button></div>
+                        <div class="col-auto"><button class="btn-light">Mark</button></div>
+                        <div class="col-auto"><button class="btn-light">Next</button></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="block-sidebar">
+            <div class="sidebar__info">
+                <div class="container-fluid container-wrap">
+                    <div class="row">
+                        <div class="col">Exam Name</div>
+                        <div class="col-auto"><button class="btn-pr">End Exam</button></div>
+                    </div>
+                </div>
+            </div>
+            <div class="sidebar__body">
+                <div class="container-fluid">
+                    <div id="">
+                        <div class="exam-section__name">Physics</div>
+                        <div class="exam-section__status__wrapper">
+                            <span class="exam-section__status status--answered">12 Attended</span>
+                            <span class="exam-section__status status--marked">2 Marked</span>
+                            <span class="exam-section__status status--unanswered">8 Unanswered</span>
+                        </div>
+                        <div class="exam-section__items">
+                            <% for($i=1;$i<=23;$i++){ %>
+                                <span><%= $i %> </span>
+                                <% } %>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <%- include("partials/footer") %>
