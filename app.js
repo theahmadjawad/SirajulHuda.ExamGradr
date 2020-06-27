@@ -2,14 +2,15 @@ var express = require("express");
 var app = express();
 var bodyParser = require("body-parser");
 var mongoose = require('mongoose');
+var session = require('express-session')
 const { Int32 } = require("mongodb");
 
 mongoose.connect('mongodb+srv://rootuser:0vNG2bh34oQEiUHG@examgradr-xee65.mongodb.net/examgradr?retryWrites=true&w=majority', { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.set('useFindAndModify', false);
 
 var Exam = require("./models/exam");
 var Enrollment = require("./models/enrollment");
-const enrollment = require("./models/enrollment");
-const exam = require("./models/exam");
+
 
 app.get("/adddb", function(req, res) {
     Exam.create({
@@ -41,7 +42,15 @@ app.get("/adddb", function(req, res) {
 })
 
 app.use(bodyParser.urlencoded({ extended: true }));
+// app.use(bodyParser.json());
 app.use(express.static("public"));
+
+app.use(session({
+    secret: 'examgraderquizapp',
+    resave: false,
+    saveUninitialized: true
+}));
+
 app.set("view engine", "ejs");
 
 app.get("/", function(req, res) {
@@ -61,6 +70,7 @@ app.get("/exam/:id", function(req, res) {
 })
 
 app.post("/exam/:id", function(req, res) {
+
     newEnrollment = {
         exam_id: req.params.id,
         name: req.body.name,
@@ -75,10 +85,15 @@ app.post("/exam/:id", function(req, res) {
 })
 
 app.get("/attend/:id", function(req, res) {
+
     Enrollment.findById(req.params.id, function(err, foundEnrollment) {
         if (err) { console.log(err); } else {
             Exam.findById(foundEnrollment.exam_id, function(err, foundExam) {
                 if (err) { console.log(err); } else {
+                    var duration = foundExam.duration_settings.duration;
+                    var now = new Date();
+                    req.session.closeTime = (now.getTime() + 60000 * duration)
+
                     foundExam.questions.forEach(element => {
                         element.answer_id = undefined;
                     });
@@ -88,6 +103,22 @@ app.get("/attend/:id", function(req, res) {
         }
     })
 })
+
+app.post("/attend/:id/saveSubmission", function(req, res) {
+    var now = new Date();
+    if (req.session.closeTime <= now.getTime()) {
+        Enrollment.findByIdAndUpdate(req.params.id, { "submissions": req.body.submissions }, function(err, result) {
+            if (err) {
+                res.send("failed");
+            } else {
+                res.send("success");
+            }
+        })
+    } else {
+        res.send("timeExpired")
+    }
+})
+
 
 app.listen(3000, function() {
     console.log("Server Started");

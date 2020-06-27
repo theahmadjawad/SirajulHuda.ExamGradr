@@ -10,7 +10,7 @@
     <script>
         $(document).ready(function() {
             $questionData = JSON.parse('<%- JSON.stringify(exam.questions) %>');
-            $submissions = [];
+            $submissions = {};
             $marked = [];
             $currentQuestionNumber = 1;
             $totalQuestions = $questionData.length;
@@ -32,9 +32,9 @@
             $options = '';
             while ($currentQuestion.options[$optionIndex]) {
                 $options = $options + `<div class="col-lg-6">
-                    <div class="exam__answer__option" onclick="saveSelection('` + $currentQuestion._id + `','` + $currentQuestion.options[$optionIndex]._id + `')">
+                    <div class="exam__answer__option" >
                         <input type="radio" name="option-group" id="option-` + $currentQuestion.options[$optionIndex]._id + `">
-                        <label for="option-` + $currentQuestion.options[$optionIndex]._id + `">` + $currentQuestion.options[$optionIndex].title + `</label>
+                        <label for="option-` + $currentQuestion.options[$optionIndex]._id + `" onclick="saveSelection('` + $currentQuestion._id + `','` + $currentQuestion.options[$optionIndex]._id + `')" >` + $currentQuestion.options[$optionIndex].title + `</label>
                     </div>
                 </div>`;
                 $optionIndex++;
@@ -57,6 +57,7 @@
         function saveSelection($questionId, $optionId) {
             $submissions[$questionId] = $optionId;
             updateSidebar();
+            saveSubmission();
         }
 
         function previousQuestion() {
@@ -156,7 +157,7 @@
                             <div class="brand"> ExamGradr</div>
                         </div>
                         <div class="col-auto">
-                            <div class="time-left">Time Left: <span> 00:23:34</span></div>
+                            <div id="time-left" class="time-left">Time Left: <span> 00:00:00</span></div>
                         </div>
                         <div class="col-auto btn-menu__wrapper"><button id="btn-menu" class="btn-light">|||</button></div>
                     </div>
@@ -196,7 +197,9 @@
                 <div class="container-fluid container-wrap">
                     <div class="row">
                         <div class="col">
-                            <%= exam.name %>
+                            <div class="exam-name">
+                                <%= textTruncate(exam.name) %>
+                            </div>
                         </div>
                         <div class="col-auto"><button class="btn-pr">End Exam</button></div>
                     </div>
@@ -221,4 +224,52 @@
         </div>
     </section>
 
-    <%- include("partials/footer") %>
+    <% function textTruncate(str, length='30', ending='..') {
+        if (str.length > length) {
+          return str.substring(0, length - ending.length) + ending;
+        } else {
+          return str;
+        }
+      };
+      %>
+
+        <script>
+            function saveSubmission() {
+
+                $submissions = $submissions;
+                console.log($submissions);
+                $.ajax({
+                        method: "POST",
+                        url: "/attend/<%= enrollment._id %>/saveSubmission",
+                        data: {
+                            submissions: $submissions
+                        }
+                    })
+                    .done(function() {
+                        console.log("Success");
+                    })
+                    .fail(function() {
+                        console.log("Failure");
+                    });
+            }
+
+            var duration = '<%= exam.duration_settings.duration*60 %>',
+                minutes, seconds;
+
+            var timer = setInterval(function() {
+                minutes = parseInt(duration / 60, 10);
+                seconds = parseInt(duration % 60, 10);
+
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+
+                $("#time-left span").html(minutes + ':' + seconds);
+
+                if (--duration < 0) {
+                    // SubmitFunction();
+                    clearInterval(timer);
+                }
+            }, 1000);
+        </script>
+
+        <%- include("partials/footer") %>

@@ -9,10 +9,7 @@ var enrollmentSchema = new mongoose.Schema({
     //     type: mongoose.Schema.Types.ObjectId,
     //     ref: "Exam"
     // }],
-    submissions: [{
-        question_id: mongoose.Schema.Types.ObjectId,
-        option_id: mongoose.Schema.Types.ObjectId
-    }],
+    submissions: Object,
     marks: [{
         section: String,
         marks: Number
