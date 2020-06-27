@@ -1,0 +1,33 @@
+button {
+    background-color: white;
+    border: 0;
+    padding: 12px 24px;
+    border-radius: 4px;
+    height: 48px;
+    font-weight: 500;
+}
+
+.input-text {
+    height: 48px;
+    border-radius: 4px;
+}
+
+button.btn-pr {
+    background-color: $primary;
+    color: white;
+}
+
+button.btn-light {
+    background-color: $light;
+    color: $dark;
+    border: 1px solid #ddd;
+}
+
+button.btn-dark {
+    background-color: $dark;
+    color: white;
+}
+
+.btn-menu__wrapper {
+    display: none;
+}
