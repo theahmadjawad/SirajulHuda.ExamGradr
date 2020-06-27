@@ -9,11 +9,11 @@ var enrollmentSchema = new mongoose.Schema({
     //     type: mongoose.Schema.Types.ObjectId,
     //     ref: "Exam"
     // }],
-    submissions: Object,
-    marks: [{
-        section: String,
-        marks: Number
-    }]
+    marks: Object,
+    // marks: [{
+    //     section: String,
+    //     marks: Number
+    // }]
 });
 
 module.exports = mongoose.model("Enrollment", enrollmentSchema);

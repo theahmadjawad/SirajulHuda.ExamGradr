@@ -29,12 +29,23 @@ var examSchema = new mongoose.Schema({
         duration: Number
     },
     questions: [{
+        section: String,
         title: String,
         options: [{
             title: String,
         }],
         answer_id: mongoose.Schema.Types.ObjectId
-    }]
+    }],
+    // questions_section: [{
+    //     section_name: String,
+    //     questions: [{
+    //         title: String,
+    //         options: [{
+    //             title: String,
+    //         }],
+    //         answer_id: mongoose.Schema.Types.ObjectId
+    //     }]
+    // }]
 });
 
 module.exports = mongoose.model("Exam", examSchema);
