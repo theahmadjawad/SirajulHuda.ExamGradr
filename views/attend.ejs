@@ -7,6 +7,146 @@
         }
     </style>
 
+    <script>
+        $(document).ready(function() {
+            $questionData = JSON.parse('<%- JSON.stringify(exam.questions) %>');
+            $submissions = [];
+            $marked = [];
+            $currentQuestionNumber = 1;
+            $totalQuestions = $questionData.length;
+            setQuestion(1);
+            checkButton();
+            setSidebar();
+        });
+
+        function getQuestion($i) {
+            return $questionData[$i - 1];
+        }
+
+        function setQuestion($i) {
+
+            $currentQuestion = getQuestion($i);
+            $currentQuestionNumber = $i;
+
+            $optionIndex = 0;
+            $options = '';
+            while ($currentQuestion.options[$optionIndex]) {
+                $options = $options + `<div class="col-lg-6">
+                    <div class="exam__answer__option" onclick="saveSelection('` + $currentQuestion._id + `','` + $currentQuestion.options[$optionIndex]._id + `')">
+                        <input type="radio" name="option-group" id="option-` + $currentQuestion.options[$optionIndex]._id + `">
+                        <label for="option-` + $currentQuestion.options[$optionIndex]._id + `">` + $currentQuestion.options[$optionIndex].title + `</label>
+                    </div>
+                </div>`;
+                $optionIndex++;
+            }
+
+            $('#exam__question__info').html("Question " + ($i));
+            $('#exam__question__title').html($currentQuestion.title);
+            $('#exam__answer__options').html($options);
+
+            if ($submissions[$currentQuestion._id]) {
+                if ($('input:radio[name=option-group]').is(':checked') === false) {
+                    $('#option-' + $submissions[$currentQuestion._id]).prop('checked', true);
+                }
+            }
+
+            checkButton();
+
+        }
+
+        function saveSelection($questionId, $optionId) {
+            $submissions[$questionId] = $optionId;
+            updateSidebar();
+        }
+
+        function previousQuestion() {
+            setQuestion($currentQuestionNumber - 1);
+        }
+
+        function nextQuestion() {
+            setQuestion($currentQuestionNumber + 1);
+        }
+
+        function markQuestion() {
+            $marked.push($currentQuestion._id);
+            checkButton();
+            updateSidebar();
+        }
+
+        function unmarkQuestion() {
+            // $marked.push($currentQuestion._id);
+            // arrayRemove($marked, $currentQuestion._id);
+            $marked = arrayRemove($marked, $currentQuestion._id);
+            checkButton();
+            updateSidebar();
+        }
+
+        function checkButton() {
+            $('#previousButton').removeAttr("disabled");
+            $('#nextButton').removeAttr("disabled");
+            if ($currentQuestionNumber <= 1) {
+                $('#previousButton').attr("disabled", "disabled");
+            };
+            if ($currentQuestionNumber >= $totalQuestions) {
+                $('#nextButton').attr("disabled", "disabled");
+            };
+
+            if (checkIfInArray($marked, $currentQuestion._id)) {
+                $('#markButton').attr("onClick", "unmarkQuestion();")
+                $('#markButton').html("Unmark");
+            } else {
+                $('#markButton').attr("onClick", "markQuestion();")
+                $('#markButton').html("Mark");
+            }
+        }
+
+        function setSidebar() {
+
+            $sidebarSectionItems = '';
+
+            for ($i = 1; $i <= $totalQuestions; $i++) {
+
+                $sidebarSectionItems = $sidebarSectionItems + `<span onclick = "setQuestion(` + $i + `)" id= "status-` + $i + `">` + $i + `</span>`;
+            }
+
+            $('#exam-section__items').html($sidebarSectionItems);
+            updateSidebar();
+
+        }
+
+        function updateSidebar() {
+            for ($i = 1; $i <= $totalQuestions; $i++) {
+                $('#status-' + $i).removeClass("status--marked");
+                $('#status-' + $i).removeClass("status--answered");
+                if ($marked.indexOf(getQuestion($i)._id) != -1) {
+                    $('#status-' + $i).addClass("status--marked");
+                } else if (getQuestion($i)._id in $submissions) {
+                    $('#status-' + $i).addClass("status--answered");
+                }
+            }
+        }
+
+        function checkIfInArray($array, $value) {
+            $flagInArray = 0;
+            $array.forEach(element => {
+                if (element == $value) {
+                    $flagInArray = 1;
+                }
+            });
+            if ($flagInArray == 1) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        function arrayRemove(arr, value) {
+            return arr.filter(function(ele) {
+                return ele != value;
+            });
+        }
+    </script>
+
     <section class="section-exam">
         <div class="block-main">
             <div class="main__nav">
@@ -22,41 +162,31 @@
                     </div>
                 </div>
             </div>
-
             <div class="main__content">
                 <div class="container-fluid">
                     <div class="row">
                         <div class="col">
-                            <div class="exam__question__info">
-                                Question 1
+                            <div class="exam__question__info" id="exam__question__info">
                             </div>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col">
-                            <div class="exam__question_title">
-                                Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quidem voluptatem voluptatibus non, officia culpa, architecto id nostrum praesentium eius nisi odit rerum reprehenderit, iste atque reiciendis eaque amet dolorem distinctio?
+                            <div class="exam__question__title" id="exam__question__title">
                             </div>
                         </div>
                     </div>
-                    <div class="row">
-                        <% for($i=1;$i<=4;$i++){ %>
-                            <div class="col-lg-6">
-                                <div class="exam__answer__option">
-                                    <input type="radio" id="test<%= $i %>" name="radio-group">
-                                    <label for="test<%= $i %>"> Quidem voluptatem.</label>
-                                </div>
-                            </div>
-                            <% } %>
+                    <div class="row" id="exam__answer__options">
+
                     </div>
                 </div>
             </div>
             <div class="main__footer">
                 <div class="container-fluid container-wrap">
                     <div class="row ">
-                        <div class="col"><button class="btn-light">Previous</button></div>
-                        <div class="col-auto"><button class="btn-light">Mark</button></div>
-                        <div class="col-auto"><button class="btn-light">Next</button></div>
+                        <div class="col"><button class="btn-light" id="previousButton" onclick="previousQuestion()">Previous</button></div>
+                        <div class="col-auto"><button class="btn-light" id="markButton" onclick="markQuestion()">Mark</button></div>
+                        <div class="col-auto"><button class="btn-light" id="nextButton" onclick="nextQuestion()">Next</button></div>
                     </div>
                 </div>
             </div>
@@ -65,7 +195,9 @@
             <div class="sidebar__info">
                 <div class="container-fluid container-wrap">
                     <div class="row">
-                        <div class="col">Exam Name</div>
+                        <div class="col">
+                            <%= exam.name %>
+                        </div>
                         <div class="col-auto"><button class="btn-pr">End Exam</button></div>
                     </div>
                 </div>
@@ -79,10 +211,8 @@
                             <span class="exam-section__status status--marked">2 Marked</span>
                             <span class="exam-section__status status--unanswered">8 Unanswered</span>
                         </div>
-                        <div class="exam-section__items">
-                            <% for($i=1;$i<=23;$i++){ %>
-                                <span><%= $i %> </span>
-                                <% } %>
+                        <div class="exam-section__items" id="exam-section__items">
+
                         </div>
                     </div>
 

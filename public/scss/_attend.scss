@@ -104,6 +104,7 @@
 }
 
 .exam-section__items span {
+    cursor: pointer;
     border: 1px solid #eee;
     border-radius: 4px;
     text-align: center;
@@ -123,7 +124,7 @@
     margin-bottom: 24px;
 }
 
-.exam__question_title {
+.exam__question__title {
     margin-bottom: 32px;
     font-size: 18px;
     font-weight: 500;

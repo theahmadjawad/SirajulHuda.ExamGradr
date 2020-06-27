@@ -1,31 +1,44 @@
 var express = require("express");
 var app = express();
 var bodyParser = require("body-parser");
-var mongoose = require('mongoose')
+var mongoose = require('mongoose');
+const { Int32 } = require("mongodb");
 
 mongoose.connect('mongodb+srv://rootuser:0vNG2bh34oQEiUHG@examgradr-xee65.mongodb.net/examgradr?retryWrites=true&w=majority', { useNewUrlParser: true, useUnifiedTopology: true });
 
-var examSchema = mongoose.Schema({
-    name: String,
-    parent: String
-});
+var Exam = require("./models/exam");
+var Enrollment = require("./models/enrollment");
+const enrollment = require("./models/enrollment");
+const exam = require("./models/exam");
 
-var Exam = mongoose.model("Exam", examSchema);
-
-var newExam = new Exam({
-    exam_name: "String",
-    // exam_description: "String",
-    exam_instruction: "String"
-});
-
-newExam.save(function(err, exam) {
-    if (err) {
-        console.log("error");
-    } else {
-        console.log("success");
-    }
-});
-
+app.get("/adddb", function(req, res) {
+    Exam.create({
+        name: "Sirajul Huda: Da'awa Entrance Exam",
+        description: "Description, ipsum dolor sit amet consectetur adipisicing elit. Delectus, veniam. Omnis reprehenderit odit corporis, magni, modi tempore repudiandae iste, at quasi esse nulla dignissimos. Ut dolor maiores odio quibusdam aspernatur.",
+        instruction: "Instruction, ipsum dolor sit amet consectetur adipisicing elit. Delectus, veniam. Omnis reprehenderit odit corporis, magni, modi tempore repudiandae iste, at quasi esse nulla dignissimos. Ut dolor maiores odio quibusdam aspernatur.",
+        marking_scheme: {
+            marks_per_correct_answer: 1,
+            marks_per_wrong_answer: 0
+        },
+        duration_settings: {
+            duration_type: 'exam',
+            duration: '5'
+        },
+        questions: [{
+            title: "Quessttionnn  1111 lorem ",
+            options: [{ title: "option 11" }, { title: "option 22" }, { title: "option 33" }, { title: "option 44" }],
+        }, {
+            title: "Quessttionnn  2222 lorem ",
+            options: [{ title: "option 21" }, { title: "option 23" }, { title: "option 24" }, { title: "option 25" }],
+        }]
+    }, function(err, exam) {
+        if (err) {
+            console.log("error");
+        } else {
+            console.log(exam);
+        }
+    });
+})
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
@@ -37,22 +50,44 @@ app.get("/", function(req, res) {
 
 
 app.get("/exam/:id", function(req, res) {
-    if (req.params.id == 'sirajulhuda') {
-        res.render("exam");
-    } else {
-        res.render("index");
-    }
+
+    Exam.findById(req.params.id, function(err, foundExam) {
+        if (err) {
+            console.log(err);
+        } else {
+            res.render("exam", { exam: foundExam });
+        }
+    });
+})
+
+app.post("/exam/:id", function(req, res) {
+    newEnrollment = {
+        exam_id: req.params.id,
+        name: req.body.name,
+        phone: req.body.phone,
+        place: req.body.place,
+    };
+    Enrollment.create(newEnrollment, function(err, newlyCreated) {
+        if (err) { console.log(err); } else {
+            res.redirect("/attend/" + newlyCreated._id);
+        }
+    })
 })
 
 app.get("/attend/:id", function(req, res) {
-    if (req.params.id == 'sirajulhuda') {
-        res.render("attend");
-    } else {
-        res.render("index");
-    }
+    Enrollment.findById(req.params.id, function(err, foundEnrollment) {
+        if (err) { console.log(err); } else {
+            Exam.findById(foundEnrollment.exam_id, function(err, foundExam) {
+                if (err) { console.log(err); } else {
+                    foundExam.questions.forEach(element => {
+                        element.answer_id = undefined;
+                    });
+                    res.render("attend", { exam: foundExam, enrollment: foundEnrollment });
+                }
+            })
+        }
+    })
 })
-
-
 
 app.listen(3000, function() {
     console.log("Server Started");
