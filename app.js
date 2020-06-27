@@ -10,6 +10,7 @@ mongoose.set('useFindAndModify', false);
 
 var Exam = require("./models/exam");
 var Enrollment = require("./models/enrollment");
+const enrollment = require("./models/enrollment");
 
 
 app.get("/adddb", function(req, res) {
@@ -57,6 +58,73 @@ app.get("/", function(req, res) {
     res.render("index");
 })
 
+app.post("/exam/enroll", function(req, res) {
+
+    // IF THERE EXISTS EXAM 
+
+    req.session.enrollment = {
+            exam_id: req.body.examId,
+            name: req.body.name,
+            phone: req.body.phone,
+            place: req.body.place,
+        }
+        // console.log(req.session.enrollment);
+    res.redirect("/exam/attend");
+
+})
+
+app.get("/exam/attend", function(req, res) {
+
+    // CHECK IF REFRESHED
+
+    Exam.findById(req.session.enrollment.exam_id, function(err, foundExam) {
+        if (err) { console.log(err); } else {
+            var now = new Date();
+            if (req.session.enrollment.endTime) {
+                if (now.getTime() >= req.session.enrollment.endTime) {
+                    res.render("index");
+                } else {
+                    var duration = (req.session.enrollment.endTime - now.getTime()) / 60000;
+                    foundExam.duration_settings.duration = duration;
+                }
+            } else {
+                console.log("reset");
+                var duration = foundExam.duration_settings.duration;
+                req.session.enrollment.endTime = (now.getTime() + 60000 * duration);
+            }
+            foundExam.questions.forEach(element => {
+                element.answer_id = undefined;
+            });
+            res.render("attend", { exam: foundExam });
+        }
+    })
+
+})
+
+app.post("/exam/save", function(req, res) {
+    var now = new Date();
+    if (now.getTime() <= req.session.enrollment.endTime) {
+        req.session.enrollment.submissions = req.body.submissions;
+        res.send("submissionSaved");
+    } else {
+        res.send("timeExpired");
+    }
+})
+
+app.post("/exam/submit", function(req, res) {
+
+    newEnrollment = req.session.enrollment;
+    newEnrollment.endTime = null;
+
+    Enrollment.create(newEnrollment, function(err, createdEnrollment) {
+        if (err) { console.log(err) } else {
+            res.render('response');
+            // res.redirect('/exam/response');
+        }
+    })
+
+    req.session.enrollment = null;
+})
 
 app.get("/exam/:id", function(req, res) {
 
@@ -69,55 +137,6 @@ app.get("/exam/:id", function(req, res) {
     });
 })
 
-app.post("/exam/:id", function(req, res) {
-
-    newEnrollment = {
-        exam_id: req.params.id,
-        name: req.body.name,
-        phone: req.body.phone,
-        place: req.body.place,
-    };
-    Enrollment.create(newEnrollment, function(err, newlyCreated) {
-        if (err) { console.log(err); } else {
-            res.redirect("/attend/" + newlyCreated._id);
-        }
-    })
-})
-
-app.get("/attend/:id", function(req, res) {
-
-    Enrollment.findById(req.params.id, function(err, foundEnrollment) {
-        if (err) { console.log(err); } else {
-            Exam.findById(foundEnrollment.exam_id, function(err, foundExam) {
-                if (err) { console.log(err); } else {
-                    var duration = foundExam.duration_settings.duration;
-                    var now = new Date();
-                    req.session.closeTime = (now.getTime() + 60000 * duration)
-
-                    foundExam.questions.forEach(element => {
-                        element.answer_id = undefined;
-                    });
-                    res.render("attend", { exam: foundExam, enrollment: foundEnrollment });
-                }
-            })
-        }
-    })
-})
-
-app.post("/attend/:id/saveSubmission", function(req, res) {
-    var now = new Date();
-    if (req.session.closeTime <= now.getTime()) {
-        Enrollment.findByIdAndUpdate(req.params.id, { "submissions": req.body.submissions }, function(err, result) {
-            if (err) {
-                res.send("failed");
-            } else {
-                res.send("success");
-            }
-        })
-    } else {
-        res.send("timeExpired")
-    }
-})
 
 
 app.listen(3000, function() {

@@ -28,7 +28,8 @@
                                 <div class="card-title">
                                     Enter your Details
                                 </div>
-                                <form action="/exam/<%= exam.id %>" method="POST">
+                                <form action="/exam/enroll" method="POST">
+                                    <input type="hidden" name="examId" value="<%= exam._id %>">
                                     <div class="form-group">
                                         <label for="">Name</label>
                                         <input type="text" name="name" class="form-control input-text" required>

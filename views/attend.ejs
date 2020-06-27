@@ -57,7 +57,7 @@
         function saveSelection($questionId, $optionId) {
             $submissions[$questionId] = $optionId;
             updateSidebar();
-            saveSubmission();
+            save();
         }
 
         function previousQuestion() {
@@ -201,7 +201,11 @@
                                 <%= textTruncate(exam.name) %>
                             </div>
                         </div>
-                        <div class="col-auto"><button class="btn-pr">End Exam</button></div>
+                        <div class="col-auto">
+                            <form action="/exam/submit" method="POST" onsubmit="submitted()">
+                                <button class="btn-pr submitButton" type="submit">Finish Exam</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -224,33 +228,51 @@
         </div>
     </section>
 
+    <div id="timeExpiredModal" class="modal fade" role="dialog" data-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-body text-center">
+                    <div id="time-expire-icon"></div>
+                    <div class="modal-headline">
+                        Your time has expired
+                    </div>
+                    <form action="/exam/submit" method="POST" onsubmit="submitted()">
+                        <button class="btn-pr submitButton">Submit Answers</button></form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <% function textTruncate(str, length='30', ending='..') {
         if (str.length > length) {
           return str.substring(0, length - ending.length) + ending;
         } else {
           return str;
         }
-      };
-      %>
+      }; %>
 
         <script>
-            function saveSubmission() {
-
-                $submissions = $submissions;
-                console.log($submissions);
+            function save() {
                 $.ajax({
-                        method: "POST",
-                        url: "/attend/<%= enrollment._id %>/saveSubmission",
-                        data: {
-                            submissions: $submissions
+                    method: "POST",
+                    url: "/exam/save",
+                    data: {
+                        submissions: $submissions
+                    },
+                    success: function(data) {
+                        console.log(data);
+                        if (data == 'submissionSaved') {
+                            console.log("HAHAHAH");
                         }
-                    })
-                    .done(function() {
                         console.log("Success");
-                    })
-                    .fail(function() {
-                        console.log("Failure");
-                    });
+                    }
+                });
+            }
+
+            function submitted() {
+                $('.submitButton').prop('disabled', true);
+                $('.submitButton').addClass('disabled');
             }
 
             var duration = '<%= exam.duration_settings.duration*60 %>',
@@ -266,10 +288,14 @@
                 $("#time-left span").html(minutes + ':' + seconds);
 
                 if (--duration < 0) {
-                    // SubmitFunction();
+                    timeExpired();
                     clearInterval(timer);
                 }
             }, 1000);
+
+            function timeExpired() {
+                $('#timeExpiredModal').modal('show');
+            }
         </script>
 
         <%- include("partials/footer") %>
