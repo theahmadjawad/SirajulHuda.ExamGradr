@@ -10,8 +10,9 @@
     <script>
         $(document).ready(function() {
             $questionData = JSON.parse('<%- JSON.stringify(exam.questions) %>');
-            $submissions = {};
-            $marked = [];
+            $submissions = JSON.parse('<%- JSON.stringify(submissions) %>');
+            $marked = JSON.parse('<%- JSON.stringify(marked) %>');
+
             $currentQuestionNumber = 1;
             $totalQuestions = $questionData.length;
             setQuestion(1);
@@ -72,6 +73,7 @@
             $marked.push($currentQuestion._id);
             checkButton();
             updateSidebar();
+            save();
         }
 
         function unmarkQuestion() {
@@ -80,6 +82,7 @@
             $marked = arrayRemove($marked, $currentQuestion._id);
             checkButton();
             updateSidebar();
+            save();
         }
 
         function checkButton() {
@@ -103,14 +106,51 @@
 
         function setSidebar() {
 
+            // $sidebarSectionItems = '';
+
+            // for ($i = 1; $i <= $totalQuestions; $i++) {
+
+            //     $sidebarSectionItems = $sidebarSectionItems + `<span onclick = "setQuestion(` + $i + `)" id= "status-` + $i + `">` + $i + `</span>`;
+            // }
+
+            // $('#exam-section__items').html($sidebarSectionItems);
+            // updateSidebar();
+
             $sidebarSectionItems = '';
+            $sections = {};
 
             for ($i = 1; $i <= $totalQuestions; $i++) {
 
-                $sidebarSectionItems = $sidebarSectionItems + `<span onclick = "setQuestion(` + $i + `)" id= "status-` + $i + `">` + $i + `</span>`;
+                $sectionName = getQuestion($i).section;
+
+                if (!$sections[$sectionName]) {
+                    $sections[$sectionName] = '';
+                }
+
+                $sections[$sectionName] += `<span onclick = "setQuestion(` + $i + `)" id= "status-` + $i + `">` + $i + `</span>`;
+
+                // $sidebarSectionItems = $sidebarSectionItems + `<span onclick = "setQuestion(` + $i + `)" id= "status-` + $i + `">` + $i + `</span>`;
+            }
+            $sidebarSectionWrapper = '';
+
+            for (var section in $sections) {
+                // console.log(section, $sections[section]);
+                $sidebarSectionWrapper += ` <div class="exam-section">
+                        <div class="exam-section__name">` + section + `</div>
+                        <div class="exam-section__status__wrapper">
+                            <span class="exam-section__status status--answered">Attended</span>
+                            <span class="exam-section__status status--marked">Marked</span>
+                            <span class="exam-section__status status--unanswered">Unanswered</span>
+                        </div>
+                        <div class="exam-section__items" id="exam-section__items">` + $sections[section] +
+                    `</div>
+                    </div>`
             }
 
-            $('#exam-section__items').html($sidebarSectionItems);
+
+
+            // console.log($sections);
+            $('#exam-section__wrapper').html($sidebarSectionWrapper);
             updateSidebar();
 
         }
@@ -211,18 +251,19 @@
             </div>
             <div class="sidebar__body">
                 <div class="container-fluid">
-                    <div id="">
-                        <div class="exam-section__name">Physics</div>
-                        <div class="exam-section__status__wrapper">
-                            <span class="exam-section__status status--answered">12 Attended</span>
-                            <span class="exam-section__status status--marked">2 Marked</span>
-                            <span class="exam-section__status status--unanswered">8 Unanswered</span>
-                        </div>
-                        <div class="exam-section__items" id="exam-section__items">
+                    <div id="exam-section__wrapper">
+                        <!-- <div class="exam-section">
+                            <div class="exam-section__name">Physics</div>
+                            <div class="exam-section__status__wrapper">
+                                <span class="exam-section__status status--answered">- Attended</span>
+                                <span class="exam-section__status status--marked">- Marked</span>
+                                <span class="exam-section__status status--unanswered">- Unanswered</span>
+                            </div>
+                            <div class="exam-section__items" id="exam-section__items">
 
-                        </div>
+                            </div>
+                        </div> -->
                     </div>
-
                 </div>
             </div>
         </div>
@@ -258,7 +299,8 @@
                     method: "POST",
                     url: "/exam/save",
                     data: {
-                        submissions: $submissions
+                        submissions: $submissions,
+                        marked: JSON.stringify($marked)
                     },
                     success: function(data) {
                         console.log(data);

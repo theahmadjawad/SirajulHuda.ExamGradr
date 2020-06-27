@@ -24,15 +24,40 @@ app.get("/adddb", function(req, res) {
         },
         duration_settings: {
             duration_type: 'exam',
-            duration: '5'
+            duration: '2'
         },
         questions: [{
-            title: "Quessttionnn  1111 lorem ",
-            options: [{ title: "option 11" }, { title: "option 22" }, { title: "option 33" }, { title: "option 44" }],
-        }, {
-            title: "Quessttionnn  2222 lorem ",
-            options: [{ title: "option 21" }, { title: "option 23" }, { title: "option 24" }, { title: "option 25" }],
-        }]
+                title: "ലൂത്വ് നബി(അ)നു ശേഷം ആദ്യമായി കുടുംബസമേതം പലായനം ചെയ്തത് ആര്?",
+                section: "MAT",
+                options: [{ title: "തിരുനബി (സ)" }, { title: "ഉസ്മാന്‍(റ)" }, { title: "അലി(റ)" }, { title: "ഈസ (അ)" }],
+            },
+            {
+                title: "ഖുര്‍ആന്‍ അവതരണം പൂര്‍ത്തിയായതു എത്ര വര്‍ഷം കൊണ്ട്?",
+                section: "MAT",
+                options: [{ title: "20" }, { title: "40" }, { title: "23" }, { title: "30" }],
+            },
+            {
+                title: "ഭൂമിയിലെ ആദ്യത്തെ പള്ളി",
+                section: "KAT",
+                options: [{ title: "മസ്ജിദുല്‍ ഹറാം" }, { title: "മസ്ജിദുല്‍ അഖ്‌സ്വാ" }, { title: "മസ്ജിദു ഖുബാ" }, { title: "ബൈത്തുല്‍ മുഖദസ്" }],
+            },
+            {
+                title: "ഇസ്ലാമിക പ്രബോധനത്തിന് തിരുനബി(സ) പറഞ്ഞയച്ച പ്രഥമ വ്യക്തി?",
+                section: "KAT",
+                options: [{ title: "മിസ്അബ് ബ്നു ഉമൈര്‍(റ)" }, { title: "ഉമര്‍ (റ)" }, { title: "ഖാലിദ് (റ)" }, { title: "സൈദ്(റ)" }],
+            },
+
+            {
+                title: "ആദ് സമൂഹത്തിലേക്കയക്കപ്പെട്ട പ്രവാചകന്‍ ആര്?",
+                section: "KAT",
+                options: [{ title: "ഹൂദ്" }, { title: "സ്വാലിഹ്" }, { title: "നൂഹ്" }, { title: "ഇബ്രാഹീം" }],
+            },
+            {
+                title: "ജമാഅത്ത് സുന്നത്തില്ലാത്ത നിസ്‌കാരം ഏത്?",
+                section: "KAT",
+                options: [{ title: "തറാവഹ" }, { title: "തഹയയതത" }, { title: "ജമഅ" }, { title: "മയയതത നസ‌കര" }],
+            },
+        ]
     }, function(err, exam) {
         if (err) {
             console.log("error");
@@ -86,25 +111,31 @@ app.get("/exam/attend", function(req, res) {
                 } else {
                     var duration = (req.session.enrollment.endTime - now.getTime()) / 60000;
                     foundExam.duration_settings.duration = duration;
+                    submissions = req.session.enrollment.submissions;
+                    marked = JSON.parse(req.session.enrollment.marked);
                 }
             } else {
-                console.log("reset");
+                // console.log("reset");
                 var duration = foundExam.duration_settings.duration;
                 req.session.enrollment.endTime = (now.getTime() + 60000 * duration);
+                submissions = {};
+                marked = [];
             }
             foundExam.questions.forEach(element => {
-                element.answer_id = undefined;
+                // element.answer_id = undefined;
             });
-            res.render("attend", { exam: foundExam });
+            res.render("attend", { exam: foundExam, submissions: submissions, marked: marked });
         }
     })
-
 })
 
 app.post("/exam/save", function(req, res) {
     var now = new Date();
     if (now.getTime() <= req.session.enrollment.endTime) {
         req.session.enrollment.submissions = req.body.submissions;
+        req.session.enrollment.marked = req.body.marked;
+        // console.log(req.body.marked);
+
         res.send("submissionSaved");
     } else {
         res.send("timeExpired");
@@ -116,12 +147,47 @@ app.post("/exam/submit", function(req, res) {
     newEnrollment = req.session.enrollment;
     newEnrollment.endTime = null;
 
-    Enrollment.create(newEnrollment, function(err, createdEnrollment) {
-        if (err) { console.log(err) } else {
-            res.render('response');
-            // res.redirect('/exam/response');
+    $marks = {};
+
+    Exam.findById(req.session.enrollment.exam_id, function(err, foundExam) {
+        if (err) {
+            console.log(err);
+        } else {
+            // console.log(foundExam.questions);
+
+            foundExam.questions.forEach(question => {
+
+                if (!$marks[question.section]) {
+                    $marks[question.section] = 0;
+                }
+
+                questionId = question._id;
+                answerId = question.answer_id;
+
+
+
+                if (newEnrollment.submissions[questionId] == answerId) {
+                    $marks[question.section] += 1;
+                }
+
+            });
+
+            console.log(newEnrollment.submissions);
+            console.log($marks);
+            newEnrollment.submissions = null;
+            newEnrollment.marks = $marks;
+
+            Enrollment.create(newEnrollment, function(err, createdEnrollment) {
+                if (err) { console.log(err) } else {
+                    res.render('response');
+                    // res.redirect('/exam/response');
+                }
+            })
+
         }
     })
+
+
 
     req.session.enrollment = null;
 })
