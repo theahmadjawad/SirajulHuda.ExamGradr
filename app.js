@@ -2,14 +2,22 @@ var express = require("express");
 var app = express();
 var bodyParser = require("body-parser");
 var mongoose = require('mongoose');
-var session = require('express-session')
+var session = require('express-session');
+var livereload = require("livereload");
+
+var connectLivereload = require("connect-livereload");
+
 const { Int32 } = require("mongodb");
+
+var liveReloadServer = livereload.createServer();
+liveReloadServer.watch('public');
 
 mongoose.connect('mongodb+srv://rootuser:0vNG2bh34oQEiUHG@examgradr-xee65.mongodb.net/examgradr?retryWrites=true&w=majority', { useNewUrlParser: true, useUnifiedTopology: true });
 mongoose.set('useFindAndModify', false);
 
 var Exam = require("./models/exam");
 var Enrollment = require("./models/enrollment");
+
 
 
 app.get("/adddb", function(req, res) {
@@ -44,6 +52,7 @@ app.get("/adddb", function(req, res) {
 app.use(bodyParser.urlencoded({ extended: true }));
 // app.use(bodyParser.json());
 app.use(express.static("public"));
+app.use(connectLivereload());
 
 app.use(session({
     secret: 'examgraderquizapp',
