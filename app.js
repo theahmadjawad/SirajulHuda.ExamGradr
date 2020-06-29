@@ -235,7 +235,6 @@ app.get("/exam/:id", function(req, res) {
                     res.send("Invalid Exam")
                 }
             }
-            v
         });
     } else {
         if (req.params.id == 'sirajulhuda') {
