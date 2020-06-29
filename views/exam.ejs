@@ -1,6 +1,8 @@
 <%- include("partials/header") %>
     <%- include("partials/navbar") %>
 
+
+
         <section class=" section--padding ">
             <div class="container">
                 <div class="row justify-content-center">
@@ -11,13 +13,13 @@
                                     <%= exam.name %>
                                 </div>
                                 <p>
-                                    <%= exam.description %>
+                                    <%- exam.description %>
                                 </p>
                                 <div class="card-subtitle">
                                     Instructions
                                 </div>
                                 <p>
-                                    <%= exam.instruction %>
+                                    <%- exam.instruction %>
                                 </p>
                             </div>
                         </div>

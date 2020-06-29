@@ -88,12 +88,15 @@
 
         function checkButton() {
             $('#previousButton').removeAttr("disabled");
-            $('#nextButton').removeAttr("disabled");
+            // $('#nextButton').removeAttr("disabled");
+            $("#blockMainSubmit").hide();
+            $('#nextButton').show();
             if ($currentQuestionNumber <= 1) {
                 $('#previousButton').attr("disabled", "disabled");
             };
             if ($currentQuestionNumber >= $totalQuestions) {
-                $('#nextButton').attr("disabled", "disabled");
+                $('#nextButton').hide();
+                $("#blockMainSubmit").show();
             };
 
             if (checkIfInArray($marked, $currentQuestion._id)) {
@@ -227,7 +230,12 @@
                     <div class="row form-row">
                         <div class="col"><button class="btn-light" id="previousButton" onclick="previousQuestion()">Previous</button></div>
                         <div class="col-auto"><button class="btn-light" id="markButton" onclick="markQuestion()">Mark</button></div>
-                        <div class="col-auto"><button class="btn-light" id="nextButton" onclick="nextQuestion()">Next</button></div>
+                        <div class="col-auto"><button class="btn-light" id="nextButton" onclick="nextQuestion()">Next</button>
+                            <form action="/exam/submit" method="POST" onsubmit="submitted()" id="blockMainSubmit">
+                                <button class="btn-pr submitButton" type="submit">Finish Exam</button>
+                            </form>
+                        </div>
+
                     </div>
                 </div>
             </div>
