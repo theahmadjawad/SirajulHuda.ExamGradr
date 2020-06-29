@@ -194,12 +194,12 @@
                 <div class="container-fluid container-wrap">
                     <div class="row ">
                         <div class="col">
-                            <div class="brand"> ExamGradr</div>
+                            <div class="brand">ExamGradr</div>
                         </div>
                         <div class="col-auto">
-                            <div id="time-left" class="time-left">Time Left: <span> 00:00:00</span></div>
+                            <div id="time-left" class="time-left">Time Left: <span> 00:00</span></div>
                         </div>
-                        <div class="col-auto btn-menu__wrapper"><button id="btn-menu" class="btn-light">|||</button></div>
+                        <div class="col-auto btn-menu__wrapper"><button id="btn-menu" class=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button></div>
                     </div>
                 </div>
             </div>
@@ -224,7 +224,7 @@
             </div>
             <div class="main__footer">
                 <div class="container-fluid container-wrap">
-                    <div class="row ">
+                    <div class="row form-row">
                         <div class="col"><button class="btn-light" id="previousButton" onclick="previousQuestion()">Previous</button></div>
                         <div class="col-auto"><button class="btn-light" id="markButton" onclick="markQuestion()">Mark</button></div>
                         <div class="col-auto"><button class="btn-light" id="nextButton" onclick="nextQuestion()">Next</button></div>
@@ -285,7 +285,7 @@
         </div>
     </div>
 
-    <% function textTruncate(str, length='30', ending='..') {
+    <% function textTruncate(str, length='25', ending='..') {
         if (str.length > length) {
           return str.substring(0, length - ending.length) + ending;
         } else {
@@ -303,11 +303,11 @@
                         marked: JSON.stringify($marked)
                     },
                     success: function(data) {
-                        console.log(data);
+                        // console.log(data);
                         if (data == 'submissionSaved') {
-                            console.log("HAHAHAH");
+                            // console.log("HAHAHAH");
                         }
-                        console.log("Success");
+                        // console.log("Success");
                     }
                 });
             }

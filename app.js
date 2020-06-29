@@ -17,9 +17,6 @@ mongoose.set('useFindAndModify', false);
 
 var Exam = require("./models/exam");
 var Enrollment = require("./models/enrollment");
-const enrollment = require("./models/enrollment");
-
-
 
 app.get("/adddb", function(req, res) {
     Exam.create({
@@ -76,10 +73,8 @@ app.get("/adddb", function(req, res) {
 })
 
 app.use(bodyParser.urlencoded({ extended: true }));
-// app.use(bodyParser.json());
 app.use(express.static("public"));
 app.use(connectLivereload());
-
 app.use(session({
     secret: 'examgraderquizapp',
     resave: false,
@@ -94,48 +89,76 @@ app.get("/", function(req, res) {
 
 app.post("/exam/enroll", function(req, res) {
 
-    // IF THERE EXISTS EXAM 
+    if (mongoose.isValidObjectId(req.body.examId)) {
+        Exam.findById(req.body.examId, function(err, foundExam) {
+            if (err) {
+                console.log(err);
+                res.send("Invalid Exam or Database Error");
+            } else {
+                if (foundExam) {
+                    req.session.enrollment = {
+                        exam_id: req.body.examId,
+                        name: req.body.name,
+                        phone: req.body.phone,
+                        place: req.body.place,
+                        submissions: {},
+                        marked: []
+                    }
+                    res.redirect("/exam/attend");
+                } else {
+                    res.send("Invalid Exam");
+                }
+            }
+        })
+    } else {
+        res.send("Invalid Exam");
+    };
 
-    req.session.enrollment = {
-            exam_id: req.body.examId,
-            name: req.body.name,
-            phone: req.body.phone,
-            place: req.body.place,
-        }
-        // console.log(req.session.enrollment);
-    res.redirect("/exam/attend");
+
 
 })
 
 app.get("/exam/attend", function(req, res) {
 
-    // CHECK IF REFRESHED
-
-    Exam.findById(req.session.enrollment.exam_id, function(err, foundExam) {
-        if (err) { console.log(err); } else {
-            var now = new Date();
-            if (req.session.enrollment.endTime) {
-                if (now.getTime() >= req.session.enrollment.endTime) {
-                    res.render("index");
-                } else {
-                    var duration = (req.session.enrollment.endTime - now.getTime()) / 60000;
-                    foundExam.duration_settings.duration = duration;
-                    submissions = req.session.enrollment.submissions;
-                    marked = JSON.parse(req.session.enrollment.marked);
+    if (req.session.enrollment) {
+        if (mongoose.isValidObjectId(req.session.enrollment.exam_id)) {
+            Exam.findById(req.session.enrollment.exam_id, function(err, foundExam) {
+                if (err) { console.log(err); } else {
+                    var now = new Date();
+                    if (req.session.enrollment.endTime) {
+                        if (now.getTime() >= req.session.enrollment.endTime) {
+                            res.render("index");
+                        } else {
+                            var duration = (req.session.enrollment.endTime - now.getTime()) / 60000;
+                            foundExam.duration_settings.duration = duration;
+                            submissions = req.session.enrollment.submissions;
+                            console.log(req.session.enrollment.marked);
+                            if (Array.isArray(req.session.enrollment.marked)) {
+                                marked = req.session.enrollment.marked
+                            } else {
+                                marked = JSON.parse(req.session.enrollment.marked);
+                            }
+                        }
+                    } else {
+                        // console.log("reset");
+                        var duration = foundExam.duration_settings.duration;
+                        req.session.enrollment.endTime = (now.getTime() + 60000 * duration);
+                        submissions = {};
+                        marked = [];
+                    }
+                    foundExam.questions.forEach(element => {
+                        // element.answer_id = undefined;
+                    });
+                    res.render("attend", { exam: foundExam, submissions: submissions, marked: marked });
                 }
-            } else {
-                // console.log("reset");
-                var duration = foundExam.duration_settings.duration;
-                req.session.enrollment.endTime = (now.getTime() + 60000 * duration);
-                submissions = {};
-                marked = [];
-            }
-            foundExam.questions.forEach(element => {
-                // element.answer_id = undefined;
-            });
-            res.render("attend", { exam: foundExam, submissions: submissions, marked: marked });
+            })
+        } else {
+            res.send("Invalid Exam");
         }
-    })
+    } else {
+        res.send("Session expired");
+    }
+
 })
 
 app.post("/exam/save", function(req, res) {
@@ -143,8 +166,6 @@ app.post("/exam/save", function(req, res) {
     if (now.getTime() <= req.session.enrollment.endTime) {
         req.session.enrollment.submissions = req.body.submissions;
         req.session.enrollment.marked = req.body.marked;
-        // console.log(req.body.marked);
-
         res.send("submissionSaved");
     } else {
         res.send("timeExpired");
@@ -203,17 +224,34 @@ app.post("/exam/submit", function(req, res) {
 
 app.get("/exam/:id", function(req, res) {
 
-    Exam.findById(req.params.id, function(err, foundExam) {
-        if (err) {
-            console.log(err);
-        } else {
-            res.render("exam", { exam: foundExam });
+    if (mongoose.isValidObjectId(req.params.id)) {
+        Exam.findById(req.params.id, function(err, foundExam) {
+            if (err) {
+                console.log(err);
+            } else {
+                if (foundExam) {
+                    res.render("exam", { exam: foundExam });
+                } else {
+                    res.send("Invalid Exam")
+                }
+            }
+            v
+        });
+    } else {
+        if (req.params.id == 'sirajulhuda') {
+            res.redirect("/exam/5ef7ab657ec551057266b545")
         }
-    });
+        res.send("Invalid Exam")
+    }
+
 })
-
-
-
+app.get('*', function(req, res) {
+    res.send("Invalid Link. You will be redirected now" +
+        `<script>setTimeout(function() {
+            window.location.replace("http://app.examgradr.com");
+    }, 2000)</script>`
+    );
+})
 app.listen(3000, function() {
     console.log("Server Started");
 })
