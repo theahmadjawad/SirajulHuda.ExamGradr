@@ -1,4 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Gayathri:wght@100;400;700&display=swap"');
+@import url('https://fonts.googleapis.com/css2?family=Gayathri:wght@100;400;700&family=Markazi+Text:wght@400;500;600;700&display=swap"');
 @import 'theme';
 html,
 body {
@@ -8,35 +10,17 @@ body {
 }
 
 body {
-    font-family: 'DM Sans';
+    font-family: 'DM Sans', sans-serif, 'Gayathri', 'Markazi Text';
     background-color: $light;
     color: $dark;
     -webkit-touch-callout: none;
-    /* iOS Safari */
-    -webkit-user-select: none;
-    /* Safari */
-    -khtml-user-select: none;
-    /* Konqueror HTML */
-    -moz-user-select: none;
-    /* Old versions of Firefox */
-    -ms-user-select: none;
-    /* Internet Explorer/Edge */
     user-select: none;
-    /* Non-prefixed version, currently
-                                    supported by Chrome, Edge, Opera and Firefox */
 }
-
-
-/* The emerging W3C standard
-   that is currently Firefox-only */
 
 * {
     scrollbar-width: thin;
     scrollbar-color: #ccc $light;
 }
-
-
-/* Works on Chrome/Edge/Safari */
 
 *::-webkit-scrollbar {
     width: 12px;

@@ -180,6 +180,9 @@
 
 // Responsive 
 @media only screen and (max-width: 768px) {
+    .main__content {
+        padding: 32px 16px;
+    }
     .btn-menu__wrapper {
         display: block;
     }
@@ -213,4 +216,9 @@
     border-radius: 16px;
     margin: auto;
     margin-bottom: 32px;
+}
+
+#btn-menu {
+    padding-left: 0;
+    padding-right: 0;
 }
