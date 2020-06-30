@@ -10,7 +10,7 @@
 
     <script>
         $(document).ready(function() {
-            $questionData = JSON.parse('<%- JSON.stringify(exam.questions) %>');
+            $questionData = JSON.parse(`<%- JSON.stringify(exam.questions) %>`);
             $submissions = JSON.parse('<%- JSON.stringify(submissions) %>');
             $marked = JSON.parse('<%- JSON.stringify(marked) %>');
 
